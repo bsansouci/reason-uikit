@@ -1,1 +1,0 @@
-Game.run(`FullScreen, "./assets")

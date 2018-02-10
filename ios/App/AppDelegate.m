@@ -7,7 +7,7 @@
 //
 
 #import "AppDelegate.h"
-#import "Reprocessing.h"
+#import "MainViewController.h"
 
 @interface AppDelegate ()
 
@@ -19,8 +19,7 @@
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
     // Override point for customization after application launch.
     self.window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
-    UIViewController *viewController = [[ReprocessingViewController alloc] init];
-    self.window.rootViewController = viewController;
+    self.window.rootViewController = [[MainViewController alloc] init];
     [self.window makeKeyAndVisible];
     return YES;
 }

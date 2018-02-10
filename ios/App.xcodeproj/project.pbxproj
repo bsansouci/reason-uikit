@@ -7,18 +7,19 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		7F5A5AF11FFDFEB900E7603B /* Reprocessing.m in Sources */ = {isa = PBXBuildFile; fileRef = 7F5A5AF01FFDFEB900E7603B /* Reprocessing.m */; };
+		2778A7CD202E6FB3007C9B6A /* MainViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2778A7CC202E6FB3007C9B6A /* MainViewController.m */; };
+		2778A7CF202E74E5007C9B6A /* libreason.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 2778A7CE202E74E5007C9B6A /* libreason.a */; };
 		7F5A5AF41FFE010600E7603B /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 7F5A5AF31FFE010600E7603B /* LaunchScreen.storyboard */; };
 		7F6B2A481FDF7C9B00DC8E5E /* assets in Resources */ = {isa = PBXBuildFile; fileRef = 7F6B2A471FDF7C9B00DC8E5E /* assets */; };
-		7F6B2A4C1FDF7F4400DC8E5E /* libreasongl.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 7F6B2A4B1FDF7F4400DC8E5E /* libreasongl.a */; };
 		C99F606A1E34FE8F0064B563 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = C99F60691E34FE8F0064B563 /* main.m */; };
 		C99F606D1E34FE8F0064B563 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = C99F606C1E34FE8F0064B563 /* AppDelegate.m */; };
 		C99F60751E34FE8F0064B563 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = C99F60741E34FE8F0064B563 /* Assets.xcassets */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		7F5A5AF01FFDFEB900E7603B /* Reprocessing.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = Reprocessing.m; path = "../reprocessing/Reprocessing.m"; sourceTree = "<group>"; };
-		7F5A5AF21FFDFEBE00E7603B /* Reprocessing.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = Reprocessing.h; path = "../reprocessing/Reprocessing.h"; sourceTree = "<group>"; };
+		2778A7CB202E6FB3007C9B6A /* MainViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = MainViewController.h; path = ../../src/MainViewController.h; sourceTree = "<group>"; };
+		2778A7CC202E6FB3007C9B6A /* MainViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = MainViewController.m; path = ../../src/MainViewController.m; sourceTree = "<group>"; };
+		2778A7CE202E74E5007C9B6A /* libreason.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libreason.a; sourceTree = "<group>"; };
 		7F5A5AF31FFE010600E7603B /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = LaunchScreen.storyboard; sourceTree = "<group>"; };
 		7F6B2A471FDF7C9B00DC8E5E /* assets */ = {isa = PBXFileReference; lastKnownFileType = folder; name = assets; path = ../../assets; sourceTree = "<group>"; };
 		7F6B2A4B1FDF7F4400DC8E5E /* libreasongl.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libreasongl.a; sourceTree = "<group>"; };
@@ -35,7 +36,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				7F6B2A4C1FDF7F4400DC8E5E /* libreasongl.a in Frameworks */,
+				2778A7CF202E74E5007C9B6A /* libreason.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -45,6 +46,7 @@
 		278727F01E3805CF004B754D /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				2778A7CE202E74E5007C9B6A /* libreason.a */,
 				7F6B2A4B1FDF7F4400DC8E5E /* libreasongl.a */,
 			);
 			name = Frameworks;
@@ -74,10 +76,10 @@
 				C99F606B1E34FE8F0064B563 /* AppDelegate.h */,
 				C99F606C1E34FE8F0064B563 /* AppDelegate.m */,
 				7F5A5AF31FFE010600E7603B /* LaunchScreen.storyboard */,
-				7F5A5AF01FFDFEB900E7603B /* Reprocessing.m */,
-				7F5A5AF21FFDFEBE00E7603B /* Reprocessing.h */,
 				C99F60741E34FE8F0064B563 /* Assets.xcassets */,
 				C99F60791E34FE8F0064B563 /* Info.plist */,
+				2778A7CB202E6FB3007C9B6A /* MainViewController.h */,
+				2778A7CC202E6FB3007C9B6A /* MainViewController.m */,
 				C99F60681E34FE8F0064B563 /* Supporting Files */,
 			);
 			path = App;
@@ -164,7 +166,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				C99F606D1E34FE8F0064B563 /* AppDelegate.m in Sources */,
-				7F5A5AF11FFDFEB900E7603B /* Reprocessing.m in Sources */,
+				2778A7CD202E6FB3007C9B6A /* MainViewController.m in Sources */,
 				C99F606A1E34FE8F0064B563 /* main.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
