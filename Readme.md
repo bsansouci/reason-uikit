@@ -1,25 +1,9 @@
+Just a small demo of UIKit code written entirely in Reason.
+
 # Setup
 
-First go to https://github.com/jaredly/ocaml-cross-mobile/ to set up your cross-compilers.
+You'll need xcode and iOS 11.2.
 
-Check out `package.json` to see what commands are available, or run `npm run` to see the list.
+Go to https://github.com/jaredly/ocaml-cross-mobile/ to set up your cross-compilers.
 
-NOTE: macos is the only development platform currently supported.
-
-# Development
-
-I recommend using native build + hot reloading for most of your development, and only build to web or mobile to check things out.
-
-`npm start` will get your bsb build going, and start the app. It will try to keep the app alive, by checking every second if it's died, and restarting it if it has.
-
-# iOS
-
-`npm run ios`, and then open the `./ios/App.xcodeproj` in Xcode to finish the build.
-
-# Android
-
-`npm run android` to build, or `npm run android:run` to build & install to the currently running emulator / attached device.
-
-# License
-
-This code is all licensed Creative Commons CC0
+Run `yarn run ios:sim`.

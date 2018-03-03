@@ -9,3 +9,13 @@ extern void mainReason(MainViewController *);
 }
 
 @end
+
+/*
+ open MainViewController;
+
+ MainViewController.setLoadView(self, () => {
+  mainReason(self);
+ });
+
+
+ */

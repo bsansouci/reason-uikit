@@ -23,7 +23,7 @@
 		7F5A5AF31FFE010600E7603B /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = LaunchScreen.storyboard; sourceTree = "<group>"; };
 		7F6B2A471FDF7C9B00DC8E5E /* assets */ = {isa = PBXFileReference; lastKnownFileType = folder; name = assets; path = ../../assets; sourceTree = "<group>"; };
 		7F6B2A4B1FDF7F4400DC8E5E /* libreasongl.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libreasongl.a; sourceTree = "<group>"; };
-		C99F60651E34FE8F0064B563 /* Gravitron.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; name = Gravitron.app; path = App.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		C99F60651E34FE8F0064B563 /* App.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = App.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		C99F60691E34FE8F0064B563 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		C99F606B1E34FE8F0064B563 /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
 		C99F606C1E34FE8F0064B563 /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
@@ -64,7 +64,7 @@
 		C99F60661E34FE8F0064B563 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				C99F60651E34FE8F0064B563 /* Gravitron.app */,
+				C99F60651E34FE8F0064B563 /* App.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -110,7 +110,7 @@
 			);
 			name = App;
 			productName = Gravitron;
-			productReference = C99F60651E34FE8F0064B563 /* Gravitron.app */;
+			productReference = C99F60651E34FE8F0064B563 /* App.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -244,7 +244,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				COPY_PHASE_STRIP = NO;
-				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
@@ -277,7 +277,7 @@
 				GCC_DYNAMIC_NO_PIC = NO;
 				HEADER_SEARCH_PATHS = "\"~/.ocaml-cross-mobile/ios-x86_64/lib/ocaml/caml\"";
 				INFOPLIST_FILE = "$(SRCROOT)/App/Info.plist";
-				IPHONEOS_DEPLOYMENT_TARGET = 9.3;
+				IPHONEOS_DEPLOYMENT_TARGET = 11.2;
 				LD_NO_PIE = NO;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				LIBRARY_SEARCH_PATHS = "$(PROJECT_DIR)";
@@ -304,7 +304,7 @@
 				GCC_DYNAMIC_NO_PIC = NO;
 				HEADER_SEARCH_PATHS = "\"~/.ocaml-cross-mobile/ios-x86_64/lib/ocaml/caml\"";
 				INFOPLIST_FILE = "$(SRCROOT)/App/Info.plist";
-				IPHONEOS_DEPLOYMENT_TARGET = 9.3;
+				IPHONEOS_DEPLOYMENT_TARGET = 11.2;
 				LD_NO_PIE = NO;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				LIBRARY_SEARCH_PATHS = "$(PROJECT_DIR)";
