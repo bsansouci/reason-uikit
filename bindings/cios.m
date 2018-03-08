@@ -135,7 +135,7 @@ CAMLprim value UIView_newWithFrame(value frame) {
 }
 
 CAMLprim value UIView_frame(value uiview) {
-  CAMLparam0();
+  CAMLparam1(uiview);
   CAMLlocal3(ret, origin, size);
   MyUIView *view = (MyUIView *)Field(uiview, 0);
 
@@ -261,35 +261,12 @@ CAMLprim value UIColor_greenColor() {
   CAMLreturn((value)[UIColor greenColor]);
 }
 
-// end UIColor
-
-// UILabel ------------------------
-
-CAMLprim value UILabel_new() {
+CAMLprim value UIColor_whiteColor() {
   CAMLparam0();
-  CAMLlocal1(ret);
-  ret = caml_alloc_small(5, Abstract_tag);
-  Field(ret, 0) = (value)[UILabel new];
-  Field(ret, 1) = Val_none;
-  Field(ret, 2) = Val_none;
-  Field(ret, 3) = Val_none;
-  Field(ret, 4) = Val_none;
-  CAMLreturn(ret);
+  CAMLreturn((value)[UIColor whiteColor]);
 }
 
-void UILabel_setText(value uilabel, value text) {
-  CAMLparam2(uilabel, text);
-  ((UILabel *)Field(uilabel, 0)).text = (NSString *) text;
-  CAMLreturn0;
-}
-
-CAMLprim value UILabel_text(value uilabel) {
-  CAMLparam1(uilabel);
-  CAMLreturn((value)((UILabel *)Field(uilabel, 0)).text);
-}
-
-// end UILabel
-
+// end UIColor
 
 
 // NSString ------------------------

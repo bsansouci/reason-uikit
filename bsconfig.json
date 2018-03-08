@@ -1,6 +1,7 @@
 {
   "name": "reason-uikit",
   "sources": [ "src" ],
+  "ppx-flags": ["../cppx/cppx"],
   "entries": [{
     "backend": "native",
     "main-module": "Ios",

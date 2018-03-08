@@ -3,54 +3,24 @@ open UIKit;
 let sp = Printf.sprintf;
 
 let main = mainController => {
+  let bla = UIView._new();
+  UIView.setFrame(bla, _CGRectMake(0., 0., 500., 500.));
+  UIView.setBackgroundColor(bla, UIColor.whiteColor());
   let v = UIView._new();
-  let subview = UIView.newWithFrame(_CGRectMake(100., 100., 200., 200.));
-  UIView.setBackgroundColor(subview, UIColor.redColor());
-  UIView.setClipsToBounds(subview, true);
-  let subview2 = UIView.newWithFrame(_CGRectMake(50., 50., 100., 100.));
-  UIView.setBackgroundColor(subview2, UIColor.greenColor());
-  let text = UILabel._new();
-  UILabel.setText(text, NSString.newWithString("Drag me around!"));
-  UIView.addSubview(subview, text);
-  UIView.addSubview(subview, subview2);
-  UIView.addSubview(v, subview);
-  UIView.setLayoutSubviews(
-    v,
-    () => {
-      let size = UIView.sizeThatFits(text, UIView.frame(subview).size);
-      UIView.setFrame(text, { origin: { x: 0., y: 0. }, size });
-    }
-  );
-  let oldX = ref(0.);
-  let oldY = ref(0.);
-  let dragging = ref(false);
-  let frame = ref(UIView.frame(subview));
-  UIView.setTouchesBegan(
-    v,
-    touchLocation => {
-      frame := UIView.frame(subview);
-      if (_CGRectContainsPoint(frame^, touchLocation)) {
-        dragging := true;
-        oldX := touchLocation.x;
-        oldY := touchLocation.y;
-      };
-    }
-  );
-  UIView.setTouchesMoved(v, touchLocation =>
-    if (dragging^) {
-      let newFrame =
-        _CGRectMake(
-          frame^.origin.x +. touchLocation.x -. oldX^,
-          frame^.origin.y +. touchLocation.y -. oldY^,
-          frame^.size.width,
-          frame^.size.height
-        );
-      UIView.setFrame(subview, newFrame);
-    }
-  );
-  UIView.setTouchesEnded(v, touchLocation => dragging := false);
+  UIView.addSubview(v, bla);
+  let image =
+    switch (UIImage.imageNamed("shadow")) {
+    | None => failwith("image not there dumb dumb")
+    | Some(image) =>
+      UIImage.resizableImageWithCapInsets(
+        image,
+        _UIEdgeInsetsMake(45., 45., 45., 45.)
+      )
+    };
+  let cardShadow = UIImageView.newWithImage(image);
+  UIView.setFrame(cardShadow, _CGRectMake(20., 20., 100., 100.));
+  UIView.addSubview(v, cardShadow);
   UIViewController.setView(mainController, v);
-  print_endline("Hello Sailor");
 };
 
 Callback.register("main", main);

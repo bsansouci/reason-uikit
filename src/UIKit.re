@@ -12,6 +12,13 @@ type _CGPoint = {
   y: float
 };
 
+type _UIEdgeInsets = {
+  bottom: float,
+  left: float,
+  right: float,
+  top: float
+};
+
 type _CGRect = {
   origin: _CGPoint,
   size: _CGSize
@@ -36,6 +43,13 @@ let _CGRectContainsPoint = (rect, point) =>
   && point.x < rect.origin.x
   +. rect.size.height;
 
+let _UIEdgeInsetsMake = (top, left, bottom, right) => {
+  top,
+  left,
+  bottom,
+  right
+};
+
 module NSString = {
   type nsstring;
   type t = objcT(nsstring);
@@ -51,6 +65,7 @@ module UIColor = {
   external redColor : unit => t = "UIColor_redColor";
   /* [@c.static] external greenColor : unit => t = ""; */
   external greenColor : unit => t = "UIColor_greenColor";
+  external whiteColor : unit => t = "UIColor_whiteColor";
 };
 
 module rec UIViewController: {
@@ -122,11 +137,122 @@ and UIView: {
   external setClipsToBounds : (t, bool) => unit = "UIView_setClipsToBounds";
 };
 
+[@c.class]
 module UILabel = {
   include UIView;
   type uilabel;
   type t2 = objcT(uilabel);
-  external _new : unit => t = "UILabel_new";
+  [@c.new] external _new : unit => t = "UILabel_new";
   external text : t => NSString.t = "UILabel_text";
+  [%c.raw {|
+    void UILabel_setText(value uilabel, value text) {
+      CAMLparam2(uilabel, text);
+      ((UILabel *)Field(uilabel, 0)).text = (NSString *) text;
+      CAMLreturn0;
+    }
+  |}];
+
   external setText : (t, NSString.t) => unit = "UILabel_setText";
+  [%c.raw {|
+    CAMLprim value UILabel_text(value uilabel) {
+      CAMLparam1(uilabel);
+      CAMLreturn((value)((UILabel *)Field(uilabel, 0)).text);
+    }
+  |}];
+};
+
+[@c.class]
+module UIImage = {
+  type uiimage;
+  type t = uiimage;
+  [@c.new] external _new : unit => t = "UIImage_new";
+  external imageNamed : string => option(t) = "UIImage_imageNamed";
+  [%c.raw
+    {|
+    CAMLprim value UIImage_imageNamed(value name) {
+      CAMLparam1(name);
+      UIImage *maybeImage = [UIImage imageNamed:[[NSString alloc] initWithUTF8String:String_val(name)]];
+      if (!maybeImage) {
+        CAMLreturn(Val_none);
+      }
+      CAMLreturn(Val_some((value) maybeImage));
+    }
+    |}
+  ];
+  external resizableImageWithCapInsets : (t, _UIEdgeInsets) => t =
+    "UIImage_resizableImageWithCapInsets";
+  [%c.raw
+    {|
+    CAMLprim value UIImage_resizableImageWithCapInsets(value uiimage, value insets) {
+      CAMLparam2(uiimage, insets);
+      CAMLreturn((value)[(UIImage *)uiimage resizableImageWithCapInsets:
+        UIEdgeInsetsMake(Double_field(insets, 3), Double_field(insets, 1), Double_field(insets, 0), Double_field(insets, 2))]);
+    }
+    |}
+  ];
+};
+
+[@c.class]
+module UIImageView = {
+  include UIView;
+  type uiimageview;
+  type t2 = objcT(uiimageview);
+  [@c.new] external _new : unit => t = "UIImageView_new";
+  external newWithImage : UIImage.t => t = "UIImageView_newWithImage";
+  [%c.raw
+    {|
+    CAMLprim value UIImageView_newWithImage(value uiimage) {
+      CAMLparam1(uiimage);
+      CAMLlocal1(ret);
+
+      ret = caml_alloc_small(5, Abstract_tag);
+      Field(ret, 0) = (value)[[UIImageView alloc] initWithImage:(UIImage *)uiimage];
+      Field(ret, 1) = Val_none;
+      Field(ret, 2) = Val_none;
+      Field(ret, 3) = Val_none;
+      Field(ret, 4) = Val_none;
+
+      CAMLreturn(ret);
+    }
+  |}
+  ];
+};
+
+module UIScreen = {
+  type uiscreen;
+  type t = uiscreen;
+  external mainScren : unit => t = "UIScreen_mainScreen";
+  [%c.raw
+    {|
+    CAMLprim value UIScreen_mainScreen() {
+      CAMLparam0();
+      CAMLreturn((value)[UIScreen mainScreen]);
+    }
+  |}
+  ];
+  external bounds : t => _CGRect = "UIScreen_bounds";
+  [%c.raw
+    {|
+    CAMLprim value UIScreen_bounds(value screen) {
+      CAMLparam1(screen);
+      CAMLlocal3(ret, origin, size);
+
+      CGRect r = [((UIScreen *)screen) bounds];
+
+      origin = caml_alloc_small(2, Double_array_tag);
+      Double_field(origin, 0) = (double)r.origin.x;
+      Double_field(origin, 1) = (double)r.origin.y;
+
+      size = caml_alloc_small(2, Double_array_tag);
+      Double_field(size, 0) = (double)r.size.width;
+      Double_field(size, 1) = (double)r.size.height;
+
+      ret = caml_alloc_small(2, Abstract_tag);
+      Field(ret, 0) = origin;
+      Field(ret, 1) = size;
+      CAMLreturn(ret);
+    }
+
+    |}
+  ];
 };
