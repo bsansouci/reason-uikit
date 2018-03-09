@@ -4,7 +4,7 @@ let sp = Printf.sprintf;
 
 let main = mainController => {
   let bla = UIView._new();
-  UIView.setFrame(bla, _CGRectMake(0., 0., 500., 500.));
+  UIView.setFrame(bla, UIScreen.(bounds(mainScren())));
   UIView.setBackgroundColor(bla, UIColor.whiteColor());
   let v = UIView._new();
   UIView.addSubview(v, bla);

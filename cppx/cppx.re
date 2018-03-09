@@ -73,6 +73,173 @@ let appendToFile = (loc, str) => {
   output_string(oc, printLineNumber(loc) ++ str);
 };
 
+let splitFirst = (str, c) => {
+  let j = ref(-1);
+  for (i in 0 to String.length(str) - 1) {
+    if (j^ == (-1) && str.[i] == c) {
+      j := i;
+    };
+  };
+  if (j^ == (-1)) {
+    (str, "");
+  } else {
+    (String.sub(str, 0, j^), String.sub(str, j^, String.length(str) - j^));
+  };
+};
+
+let processModule = moduleDesc => {
+  let processStructures = (moduleName, listOfStructures) =>
+    List.map(
+      s =>
+        switch s {
+        | {
+            pstr_loc,
+            pstr_desc:
+              Pstr_primitive(
+                {
+                  pval_name: {txt: pvalNameString},
+                  pval_attributes: [({txt: "c.new"}, _)],
+                  pval_prim,
+                  pval_type: {
+                    ptyp_desc:
+                      Ptyp_arrow(
+                        _,
+                        {ptyp_desc: Ptyp_constr({txt: inputType}, [])},
+                        _
+                      )
+                  }
+                } as valDesc
+              )
+          } =>
+          let (fullFunctionName, newFunction) =
+            switch pvalNameString {
+            | "_new" => (
+                sp("%s_new", moduleName),
+                sp(
+                  {|
+                                  CAMLprim value %s_new() {
+                                    CAMLparam0();
+                                    CAMLlocal1(ret);
+
+                                    ret = caml_alloc_small(5, Abstract_tag);
+                                    Field(ret, 0) = (value)[%s new];
+                                    Field(ret, 1) = Val_none;
+                                    Field(ret, 2) = Val_none;
+                                    Field(ret, 3) = Val_none;
+                                    Field(ret, 4) = Val_none;
+
+                                    CAMLreturn(ret);
+                                  }
+                                |},
+                  moduleName,
+                  moduleName
+                )
+              )
+            | _ =>
+              log(
+                "pvalNameString big enough: "
+                ++ string_of_bool(String.length(pvalNameString) > 3)
+              );
+              let truncatedName =
+                String.sub(
+                  pvalNameString,
+                  3,
+                  String.length(pvalNameString) - 3
+                );
+              let inputType =
+                Longident.(
+                  switch inputType {
+                  | Lident(inputType) =>
+                    log("it was a long ident: " ++ inputType);
+                    inputType;
+                  | Ldot(Lident(inputType), "t") =>
+                    log("it was an Ldot : " ++ inputType);
+                    inputType;
+                  | _ =>
+                    log("waht the heck");
+                    "asdasdsdas";
+                  }
+                );
+              let fullFunctionName = sp("%s_%s", moduleName, pvalNameString);
+              (
+                fullFunctionName,
+                sp(
+                  {|
+                                  CAMLprim value %s(value uiimage) {
+                                    CAMLparam1(uiimage);
+                                    CAMLlocal1(ret);
+
+                                    ret = caml_alloc_small(5, Abstract_tag);
+                                    Field(ret, 0) = (value)[[%s alloc] init%s:(%s *)uiimage];
+                                    Field(ret, 1) = Val_none;
+                                    Field(ret, 2) = Val_none;
+                                    Field(ret, 3) = Val_none;
+                                    Field(ret, 4) = Val_none;
+
+                                    CAMLreturn(ret);
+                                  }
+                                |},
+                  fullFunctionName,
+                  moduleName,
+                  truncatedName,
+                  inputType
+                )
+              );
+            };
+          log("fullFunctionName: " ++ fullFunctionName);
+          appendToFile(pstr_loc, newFunction);
+          Ast_helper.Str.primitive({
+            ...valDesc,
+            pval_prim: [fullFunctionName]
+          });
+        | _ => s
+        },
+      listOfStructures
+    );
+  switch moduleDesc {
+  | {
+      pmb_attributes: [({txt: "c.class"}, _)],
+      pmb_expr:
+        {
+          pmod_desc:
+            Pmod_constraint(
+              {pmod_desc: Pmod_structure(listOfStructures)} as inner_pmod_desc,
+              other
+            )
+        } as pmb_expr,
+      pmb_name: {txt: moduleName}
+    } =>
+    let newList = processStructures(moduleName, listOfStructures);
+    {
+      ...moduleDesc,
+      pmb_expr: {
+        ...pmb_expr,
+        pmod_desc:
+          Pmod_constraint(
+            {...inner_pmod_desc, pmod_desc: Pmod_structure(newList)},
+            other
+          )
+      }
+    };
+  | {
+      pmb_attributes: [({txt: "c.class"}, _)],
+      pmb_expr: {pmod_desc: Pmod_structure(listOfStructures)} as pmb_expr,
+      pmb_name: {txt: moduleName}
+    } =>
+    let newList = processStructures(moduleName, listOfStructures);
+    {
+      ...moduleDesc,
+      pmb_expr: {
+        ...pmb_expr,
+        pmod_desc: Pmod_structure(newList)
+      }
+    };
+  | _ =>
+    log("Moduledesc wasn't touched");
+    moduleDesc;
+  };
+};
+
 let test_mapper = _argv => {
   ...default_mapper, /* we extend the default_mapper */
   /* And override the 'expr' property */
@@ -97,55 +264,19 @@ let test_mapper = _argv => {
     },
   structure_item: (mapper, structure_item) =>
     switch structure_item {
-    | {
-        pstr_desc:
-          Pstr_module(
-            {
-              pmb_attributes: [({txt: "c.class"}, _)],
-              pmb_loc,
-              pmb_expr: {pmod_desc: Pmod_structure(listOfStructures)},
-              pmb_name: {txt: moduleName}
-            }
-          )
-      } =>
-      log("found module: " ++ moduleName);
-      List.iter(
-        s =>
-          switch s {
-          | {
-              pstr_loc,
-              pstr_desc:
-                Pstr_primitive({
-                  pval_name: {txt: pvalNameString},
-                  pval_attributes: [({txt: "c.new"}, _)]
-                })
-            } =>
-            let newFunction =
-              sp(
-                {|
-                  CAMLprim value %s_new() {
-                    CAMLparam0();
-                    CAMLlocal1(ret);
-
-                    ret = caml_alloc_small(5, Abstract_tag);
-                    Field(ret, 0) = (value)[%s new];
-                    Field(ret, 1) = Val_none;
-                    Field(ret, 2) = Val_none;
-                    Field(ret, 3) = Val_none;
-                    Field(ret, 4) = Val_none;
-
-                    CAMLreturn(ret);
-                  }
-                |},
-                moduleName,
-                moduleName
-              );
-            appendToFile(pstr_loc, newFunction);
-          | _ => ()
-          },
-        listOfStructures
-      );
-      default_mapper.structure_item(mapper, structure_item);
+    | {pstr_desc: Pstr_recmodule(moduleList)} =>
+      default_mapper.structure_item(
+        mapper,
+        {
+          ...structure_item,
+          pstr_desc: Pstr_recmodule(List.map(processModule, moduleList))
+        }
+      )
+    | {pstr_desc: Pstr_module(moduleDesc)} =>
+      default_mapper.structure_item(
+        mapper,
+        Ast_helper.(Str.module_(processModule(moduleDesc)))
+      )
     | _ => default_mapper.structure_item(mapper, structure_item)
     }
 };

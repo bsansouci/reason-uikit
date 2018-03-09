@@ -77,6 +77,7 @@ module rec UIViewController: {
   type t = objcT(uiviewcontroller);
   external setView : (t, UIView.t) => unit = "UIViewController_setView";
 }
+[@c.class]
 and UIView: {
   type uiview;
   type t;
@@ -103,8 +104,8 @@ and UIView: {
     mutable touchesMoved: option(_CGPoint => unit),
     mutable touchesEnded: option(_CGPoint => unit)
   };
-  /* [@c.new] external _new : unit => t = ""; */
-  external _new : unit => t = "UIView_new";
+   [@c.new] external _new : unit => t = "";
+  /*external _new : unit => t = "UIView_new";*/
   /* [@c.new] external newWithFrame : _CGRect => t = ""; */
   external newWithFrame : _CGRect => t = "UIView_newWithFrame";
   /* [@c.property] external frame : _CGRect = ""; */
@@ -142,30 +143,33 @@ module UILabel = {
   include UIView;
   type uilabel;
   type t2 = objcT(uilabel);
-  [@c.new] external _new : unit => t = "UILabel_new";
+  [@c.new] external _new : unit => t = "";
   external text : t => NSString.t = "UILabel_text";
-  [%c.raw {|
+  [%c.raw
+    {|
     void UILabel_setText(value uilabel, value text) {
       CAMLparam2(uilabel, text);
       ((UILabel *)Field(uilabel, 0)).text = (NSString *) text;
       CAMLreturn0;
     }
-  |}];
-
+  |}
+  ];
   external setText : (t, NSString.t) => unit = "UILabel_setText";
-  [%c.raw {|
+  [%c.raw
+    {|
     CAMLprim value UILabel_text(value uilabel) {
       CAMLparam1(uilabel);
       CAMLreturn((value)((UILabel *)Field(uilabel, 0)).text);
     }
-  |}];
+  |}
+  ];
 };
 
 [@c.class]
 module UIImage = {
   type uiimage;
   type t = uiimage;
-  [@c.new] external _new : unit => t = "UIImage_new";
+  [@c.new] external _new : unit => t = "";
   external imageNamed : string => option(t) = "UIImage_imageNamed";
   [%c.raw
     {|
@@ -197,25 +201,8 @@ module UIImageView = {
   include UIView;
   type uiimageview;
   type t2 = objcT(uiimageview);
-  [@c.new] external _new : unit => t = "UIImageView_new";
-  external newWithImage : UIImage.t => t = "UIImageView_newWithImage";
-  [%c.raw
-    {|
-    CAMLprim value UIImageView_newWithImage(value uiimage) {
-      CAMLparam1(uiimage);
-      CAMLlocal1(ret);
-
-      ret = caml_alloc_small(5, Abstract_tag);
-      Field(ret, 0) = (value)[[UIImageView alloc] initWithImage:(UIImage *)uiimage];
-      Field(ret, 1) = Val_none;
-      Field(ret, 2) = Val_none;
-      Field(ret, 3) = Val_none;
-      Field(ret, 4) = Val_none;
-
-      CAMLreturn(ret);
-    }
-  |}
-  ];
+  [@c.new] external _new : unit => t = "";
+  [@c.new] external newWithImage : UIImage.t => t = "";
 };
 
 module UIScreen = {
