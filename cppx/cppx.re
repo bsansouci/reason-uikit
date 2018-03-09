@@ -117,20 +117,20 @@ let processModule = moduleDesc => {
                 sp("%s_new", moduleName),
                 sp(
                   {|
-                                  CAMLprim value %s_new() {
-                                    CAMLparam0();
-                                    CAMLlocal1(ret);
+                    CAMLprim value %s_new() {
+                      CAMLparam0();
+                      CAMLlocal1(ret);
 
-                                    ret = caml_alloc_small(5, Abstract_tag);
-                                    Field(ret, 0) = (value)[%s new];
-                                    Field(ret, 1) = Val_none;
-                                    Field(ret, 2) = Val_none;
-                                    Field(ret, 3) = Val_none;
-                                    Field(ret, 4) = Val_none;
+                      ret = caml_alloc_small(5, Abstract_tag);
+                      Field(ret, 0) = (value)[%s new];
+                      Field(ret, 1) = Val_none;
+                      Field(ret, 2) = Val_none;
+                      Field(ret, 3) = Val_none;
+                      Field(ret, 4) = Val_none;
 
-                                    CAMLreturn(ret);
-                                  }
-                                |},
+                      CAMLreturn(ret);
+                    }
+                  |},
                   moduleName,
                   moduleName
                 )
@@ -146,18 +146,23 @@ let processModule = moduleDesc => {
                   3,
                   String.length(pvalNameString) - 3
                 );
-              let inputType =
+              let typeCast = typeName => sp("(%s *)arg", typeName);
+              let inputConvertion =
                 Longident.(
                   switch inputType {
+                  | Lident("string") => "String_val(arg)"
+                  | Lident("float") => "Double_val(arg)"
+                  | Lident("int") => "Int_val(arg)"
+                  | Lident("bool") => "Bool_val(arg)"
                   | Lident(inputType) =>
                     log("it was a long ident: " ++ inputType);
-                    inputType;
+                    typeCast(inputType);
                   | Ldot(Lident(inputType), "t") =>
                     log("it was an Ldot : " ++ inputType);
-                    inputType;
+                    typeCast(inputType);
                   | _ =>
                     log("waht the heck");
-                    "asdasdsdas";
+                    "**BUG-HERE**";
                   }
                 );
               let fullFunctionName = sp("%s_%s", moduleName, pvalNameString);
@@ -165,28 +170,72 @@ let processModule = moduleDesc => {
                 fullFunctionName,
                 sp(
                   {|
-                                  CAMLprim value %s(value uiimage) {
-                                    CAMLparam1(uiimage);
-                                    CAMLlocal1(ret);
+                    CAMLprim value %s(value arg) {
+                      CAMLparam1(arg);
+                      CAMLlocal1(ret);
 
-                                    ret = caml_alloc_small(5, Abstract_tag);
-                                    Field(ret, 0) = (value)[[%s alloc] init%s:(%s *)uiimage];
-                                    Field(ret, 1) = Val_none;
-                                    Field(ret, 2) = Val_none;
-                                    Field(ret, 3) = Val_none;
-                                    Field(ret, 4) = Val_none;
+                      ret = caml_alloc_small(5, Abstract_tag);
+                      Field(ret, 0) = (value)[[%s alloc] init%s:%s];
+                      Field(ret, 1) = Val_none;
+                      Field(ret, 2) = Val_none;
+                      Field(ret, 3) = Val_none;
+                      Field(ret, 4) = Val_none;
 
-                                    CAMLreturn(ret);
-                                  }
-                                |},
+                      CAMLreturn(ret);
+                    }
+                  |},
                   fullFunctionName,
                   moduleName,
                   truncatedName,
-                  inputType
+                  inputConvertion
                 )
               );
             };
-          log("fullFunctionName: " ++ fullFunctionName);
+          log("new fullFunctionName: " ++ fullFunctionName);
+          appendToFile(pstr_loc, newFunction);
+          Ast_helper.Str.primitive({
+            ...valDesc,
+            pval_prim: [fullFunctionName]
+          });
+        | {
+            pstr_loc,
+            pstr_desc:
+              Pstr_primitive(
+                {
+                  pval_name: {txt: pvalNameString},
+                  pval_attributes: [({txt: "c.static"}, _)],
+                  pval_prim,
+                  pval_type: {
+                    ptyp_desc:
+                      Ptyp_arrow(
+                        _,
+                        {
+                          ptyp_desc:
+                            Ptyp_constr({txt: Longident.Lident("unit")}, [])
+                        },
+                        {
+                          ptyp_desc:
+                            Ptyp_constr({txt: Longident.Lident("t")}, [])
+                        }
+                      )
+                  }
+                } as valDesc
+              )
+          } =>
+          let fullFunctionName = sp("%s_%s", moduleName, pvalNameString);
+          let newFunction =
+            sp(
+              {|
+            CAMLprim value %s() {
+              CAMLparam0();
+              CAMLreturn((value)[%s %s]);
+            }
+          |},
+              fullFunctionName,
+              moduleName,
+              pvalNameString
+            );
+          log("static fullFunctionName: " ++ fullFunctionName);
           appendToFile(pstr_loc, newFunction);
           Ast_helper.Str.primitive({
             ...valDesc,

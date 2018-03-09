@@ -106,18 +106,6 @@ CAMLprim value isNil(value objc) {
 @end
 
 
-CAMLprim value UIView_new() {
-  CAMLparam0();
-  CAMLlocal1(ret);
-  ret = caml_alloc_small(5, Abstract_tag);
-  Field(ret, 0) = (value)[MyUIView new];
-  Field(ret, 1) = Val_none;
-  Field(ret, 2) = Val_none;
-  Field(ret, 3) = Val_none;
-  Field(ret, 4) = Val_none;
-  CAMLreturn(ret);
-}
-
 CAMLprim value UIView_newWithFrame(value frame) {
   CAMLparam1(frame);
   CAMLlocal1(ret);
@@ -249,32 +237,7 @@ CAMLprim value UIView_sizeThatFits(value uiview, value size) {
 // end UIView
 
 
-// UIColor --------------------
-
-CAMLprim value UIColor_redColor() {
-  CAMLparam0();
-  CAMLreturn((value)[UIColor redColor]);
-}
-
-CAMLprim value UIColor_greenColor() {
-  CAMLparam0();
-  CAMLreturn((value)[UIColor greenColor]);
-}
-
-CAMLprim value UIColor_whiteColor() {
-  CAMLparam0();
-  CAMLreturn((value)[UIColor whiteColor]);
-}
-
-// end UIColor
-
-
 // NSString ------------------------
-
-CAMLprim value NSString_newWithString(value str) {
-  CAMLparam1(str);
-  CAMLreturn((value)[[NSString alloc] initWithUTF8String:String_val(str)]);
-}
 
 CAMLprim value NSString_UTF8String(value nsstring) {
   CAMLparam1(nsstring);

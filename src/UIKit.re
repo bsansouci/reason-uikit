@@ -50,22 +50,21 @@ let _UIEdgeInsetsMake = (top, left, bottom, right) => {
   right
 };
 
+[@c.class]
 module NSString = {
   type nsstring;
   type t = objcT(nsstring);
-  external newWithString : string => t = "NSString_newWithString";
+  [@c.new] external newWithUTF8String: string => t = "";
   external _UTF8String : t => string = "NSString_UTF8String";
 };
 
-/* [@c.class] */
+[@c.class]
 module UIColor = {
   type uicolor;
   type t = objcT(uicolor);
-  /* [@c.static] external redColor : unit => t = ""; */
-  external redColor : unit => t = "UIColor_redColor";
-  /* [@c.static] external greenColor : unit => t = ""; */
-  external greenColor : unit => t = "UIColor_greenColor";
-  external whiteColor : unit => t = "UIColor_whiteColor";
+  [@c.static] external redColor : unit => t = "";
+  [@c.static] external greenColor : unit => t = "";
+  [@c.static] external whiteColor : unit => t = "";
 };
 
 module rec UIViewController: {
@@ -105,7 +104,6 @@ and UIView: {
     mutable touchesEnded: option(_CGPoint => unit)
   };
    [@c.new] external _new : unit => t = "";
-  /*external _new : unit => t = "UIView_new";*/
   /* [@c.new] external newWithFrame : _CGRect => t = ""; */
   external newWithFrame : _CGRect => t = "UIView_newWithFrame";
   /* [@c.property] external frame : _CGRect = ""; */
