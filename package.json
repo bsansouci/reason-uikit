@@ -2,9 +2,9 @@
   "name": "reason-ios",
   "version": "0.0.1",
   "scripts": {
-    "ios": "rsb ios",
-    "ios:sim": "rsb ios:sim",
-    "ios:device": "rsb ios:device",
+    "ios": "make cppx && rsb ios",
+    "ios:sim": "make cppx && rsb ios:sim",
+    "ios:device": "make cppx && rsb ios:device",
     "clean": "rm -rf _build && bsb -clean-world"
   },
   "author": "Benjamin",
