@@ -54,7 +54,15 @@ let _UIEdgeInsetsMake = (top, left, bottom, right) => {
 module NSString = {
   type nsstring;
   type t = objcT(nsstring);
-  [@c.new] external newWithUTF8String: string => t = "";
+  external newWithUTF8String : string => t = "NSString_newWithUTF8String";
+  [%c.raw
+    {|
+    CAMLprim value NSString_newWithUTF8String(value s) {
+      CAMLparam1(s);
+      CAMLreturn((value)[[NSString alloc] initWithUTF8String:String_val(s)]);
+    }
+  |}
+  ];
   external _UTF8String : t => string = "NSString_UTF8String";
 };
 
@@ -103,7 +111,7 @@ and UIView: {
     mutable touchesMoved: option(_CGPoint => unit),
     mutable touchesEnded: option(_CGPoint => unit)
   };
-   [@c.new] external _new : unit => t = "";
+  [@c.new] external _new : unit => t = "";
   /* [@c.new] external newWithFrame : _CGRect => t = ""; */
   external newWithFrame : _CGRect => t = "UIView_newWithFrame";
   /* [@c.property] external frame : _CGRect = ""; */
@@ -145,19 +153,39 @@ module UILabel = {
   external text : t => NSString.t = "UILabel_text";
   [%c.raw
     {|
-    void UILabel_setText(value uilabel, value text) {
-      CAMLparam2(uilabel, text);
-      ((UILabel *)Field(uilabel, 0)).text = (NSString *) text;
-      CAMLreturn0;
+    CAMLprim value UILabel_text(value uilabel) {
+      CAMLparam1(uilabel);
+      CAMLreturn((value)((UILabel *)Field(uilabel, 0)).text);
     }
   |}
   ];
   external setText : (t, NSString.t) => unit = "UILabel_setText";
   [%c.raw
     {|
-    CAMLprim value UILabel_text(value uilabel) {
-      CAMLparam1(uilabel);
-      CAMLreturn((value)((UILabel *)Field(uilabel, 0)).text);
+    void UILabel_setText(value uilabel, value text) {
+      CAMLparam2(uilabel, text);
+      [((UILabel *)Field(uilabel, 0)) setText: (NSString *)text];
+      CAMLreturn0;
+    }
+  |}
+  ];
+};
+
+[@c.class]
+module UITextView = {
+  include UIView;
+  type uitextview;
+  type t2 = objcT(uitextview);
+  [@c.new] external _new : unit => t = "";
+  /* heh subclassing works in our favor sometimes... */
+  /*external newWithFrame : _CGRect => t = "UIView_newWithFrame";*/
+  external setText : (t, NSString.t) => unit = "UITextView_setText";
+  [%c.raw
+    {|
+    void UITextView_setText(value uitextview, value text) {
+      CAMLparam2(uitextview, text);
+      [((UITextView *)Field(uitextview, 0)) setText:(NSString *)text];
+      CAMLreturn0;
     }
   |}
   ];
@@ -203,18 +231,11 @@ module UIImageView = {
   [@c.new] external newWithImage : UIImage.t => t = "";
 };
 
+[@c.class]
 module UIScreen = {
   type uiscreen;
   type t = uiscreen;
-  external mainScren : unit => t = "UIScreen_mainScreen";
-  [%c.raw
-    {|
-    CAMLprim value UIScreen_mainScreen() {
-      CAMLparam0();
-      CAMLreturn((value)[UIScreen mainScreen]);
-    }
-  |}
-  ];
+  [@c.static] external mainScreen : unit => t = "";
   external bounds : t => _CGRect = "UIScreen_bounds";
   [%c.raw
     {|

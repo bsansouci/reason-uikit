@@ -122,7 +122,7 @@ let processModule = moduleDesc => {
                       CAMLlocal1(ret);
 
                       ret = caml_alloc_small(5, Abstract_tag);
-                      Field(ret, 0) = (value)[%s new];
+                      Field(ret, 0) = (value)[[%s alloc] init];
                       Field(ret, 1) = Val_none;
                       Field(ret, 2) = Val_none;
                       Field(ret, 3) = Val_none;
