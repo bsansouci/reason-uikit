@@ -35,6 +35,8 @@ let _CGRectMake = (x, y, width, height) => {
   }
 };
 
+let _CGSizeMake = (width, height) => {width, height};
+
 let _CGRectContainsPoint = (rect, point) =>
   point.x > rect.origin.x
   && point.x < rect.origin.x
@@ -64,6 +66,14 @@ module NSString = {
   |}
   ];
   external _UTF8String : t => string = "NSString_UTF8String";
+  [%c.raw
+    {|
+    CAMLprim value NSString_UTF8String(value nsstring) {
+      CAMLparam1(nsstring);
+      CAMLreturn(caml_copy_string(((NSString *)nsstring).UTF8String));
+    }
+  |}
+  ];
 };
 
 [@c.class]
@@ -102,7 +112,278 @@ and UIView: {
   let setBackgroundColor: (t, UIColor.t) => unit;
   let addSubview: (t, t) => unit;
   let setClipsToBounds: (t, bool) => unit;
+  let addGestureRecognizer: (t, UIGestureRecognizer.t) => unit;
 } = {
+  [%c.raw {|
+@interface MyUIView : UIView
+
+@property(nonatomic, retain) UIGestureRecognizer *gesture1;
+@property(nonatomic, assign) value gesture1Callback;
+
+@property(nonatomic, retain) UIGestureRecognizer *gesture2;
+@property(nonatomic, assign) value gesture2Callback;
+
+@end
+
+@implementation MyUIView {
+  value _layoutSubviews;
+  value _touchesBegan;
+  value _touchesMoved;
+  value _touchesEnded;
+}
+
+- (void)layoutSubviews {
+  if (_layoutSubviews != 0) {
+    caml_callback(_layoutSubviews, Val_none);
+  }
+}
+
+- (void)setLayoutSubviews:(value)layoutSubviews {
+  _layoutSubviews = layoutSubviews;
+}
+
+- (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event
+{
+  [super touchesBegan:touches withEvent:event];
+  if (_touchesBegan != 0) {
+    UITouch* touchEvent = [touches anyObject];
+    CGPoint locationInView = [touchEvent locationInView:self];
+    CAMLparam0();
+    CAMLlocal1(ret);
+    ret = caml_alloc_small(2, Double_array_tag);
+    Double_field(ret, 0) = (double)locationInView.x;
+    Double_field(ret, 1) = (double)locationInView.y;
+    caml_callback(_touchesBegan, ret);
+    CAMLreturn0;
+  }
+}
+
+- (void)setTouchesBegan:(value)touchesBegan {
+  _touchesBegan = touchesBegan;
+}
+
+- (void)touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event
+{
+  [super touchesMoved:touches withEvent:event];
+  if (_touchesMoved != 0) {
+    UITouch* touchEvent = [touches anyObject];
+    CGPoint locationInView = [touchEvent locationInView:self];
+    CAMLparam0();
+    CAMLlocal1(ret);
+    ret = caml_alloc_small(2, Double_array_tag);
+    Double_field(ret, 0) = (double)locationInView.x;
+    Double_field(ret, 1) = (double)locationInView.y;
+    caml_callback(_touchesMoved, ret);
+    CAMLreturn0;
+  }
+}
+
+- (void)setTouchesMoved:(value)touchesMoved {
+  _touchesMoved = touchesMoved;
+}
+
+- (void)touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event
+{
+  [super touchesEnded:touches withEvent:event];
+  if (_touchesEnded != 0) {
+    UITouch* touchEvent = [touches anyObject];
+    CGPoint locationInView = [touchEvent locationInView:self];
+    CAMLparam0();
+    CAMLlocal1(ret);
+    ret = caml_alloc_small(2, Double_array_tag);
+    Double_field(ret, 0) = (double)locationInView.x;
+    Double_field(ret, 1) = (double)locationInView.y;
+    caml_callback(_touchesEnded, ret);
+    CAMLreturn0;
+  }
+}
+
+- (void)setTouchesEnded:(value)touchesEnded {
+  _touchesEnded = touchesEnded;
+}
+
+- (void)handleGesture:(UIGestureRecognizer *)recognizer {
+  CAMLparam0();
+  if (recognizer == _gesture1) {
+    CAMLlocal1(ret);
+    ret = caml_alloc_small(1, Abstract_tag);
+    Field(ret, 0) = (long)_gesture1;
+    caml_callback(_gesture1Callback, ret);
+  } else if (recognizer == _gesture2) {
+    CAMLlocal1(ret);
+    ret = caml_alloc_small(1, Abstract_tag);
+    Field(ret, 0) = (long)_gesture2;
+    caml_callback(_gesture2Callback, ret);
+  }
+  CAMLreturn0;
+}
+
+@end
+
+
+CAMLprim value UIView_newWithFrame(value frame) {
+  CAMLparam1(frame);
+  CAMLlocal1(ret);
+  value origin = Field(frame, 0);
+  value size = Field(frame, 1);
+  CGRect f = CGRectMake(Double_field(origin, 0), Double_field(origin, 1), Double_field(size, 0), Double_field(size, 1));
+
+  ret = caml_alloc_small(5, Abstract_tag);
+  Field(ret, 0) = (value)[[MyUIView alloc] initWithFrame:f];
+  Field(ret, 1) = Val_none;
+  Field(ret, 2) = Val_none;
+  Field(ret, 3) = Val_none;
+  Field(ret, 4) = Val_none;
+  CAMLreturn(ret);
+}
+
+CAMLprim value UIView_frame(value uiview) {
+  CAMLparam1(uiview);
+  CAMLlocal3(ret, origin, size);
+  MyUIView *view = (MyUIView *)Field(uiview, 0);
+
+  CGRect r = [view frame];
+
+  origin = caml_alloc_small(2, Double_array_tag);
+  Double_field(origin, 0) = (double)r.origin.x;
+  Double_field(origin, 1) = (double)r.origin.y;
+
+  size = caml_alloc_small(2, Double_array_tag);
+  Double_field(size, 0) = (double)r.size.width;
+  Double_field(size, 1) = (double)r.size.height;
+
+  ret = caml_alloc_small(2, Abstract_tag);
+  Field(ret, 0) = origin;
+  Field(ret, 1) = size;
+  CAMLreturn(ret);
+}
+
+void UIView_setFrame(value uiview, value frame) {
+  CAMLparam2(uiview, frame);
+  MyUIView *view = (MyUIView *)Field(uiview, 0);
+  value origin = Field(frame, 0);
+  value size = Field(frame, 1);
+  view.frame = CGRectMake(Double_field(origin, 0), Double_field(origin, 1), Double_field(size, 0), Double_field(size, 1));
+  CAMLreturn0;
+}
+
+void UIView_layoutSubviews(value uiview) {
+  CAMLparam1(uiview);
+  MyUIView *view = (MyUIView *)Field(uiview, 0);
+  [view layoutSubviews];
+  CAMLreturn0;
+}
+
+void UIView_setLayoutSubviews(value uiview, value cb) {
+  CAMLparam2(uiview, cb);
+  MyUIView *view = (MyUIView *)Field(uiview, 0);
+  Field(uiview, 1) = Val_some(cb);
+  [view setLayoutSubviews:cb];
+  CAMLreturn0;
+}
+
+void UIView_setTouchesBegan(value uiview, value cb) {
+  CAMLparam2(uiview, cb);
+  MyUIView *view = (MyUIView *)Field(uiview, 0);
+  Field(uiview, 2) = Val_some(cb);
+  [view setTouchesBegan:cb];
+  CAMLreturn0;
+}
+
+void UIView_setTouchesMoved(value uiview, value cb) {
+  CAMLparam2(uiview, cb);
+  MyUIView *view = (MyUIView *)Field(uiview, 0);
+  Field(uiview, 3) = Val_some(cb);
+  [view setTouchesMoved:cb];
+  CAMLreturn0;
+}
+
+void UIView_setTouchesEnded(value uiview, value cb) {
+  CAMLparam2(uiview, cb);
+  MyUIView *view = (MyUIView *)Field(uiview, 0);
+  Field(uiview, 4) = Val_some(cb);
+  [view setTouchesEnded:cb];
+  CAMLreturn0;
+}
+
+void UIView_addSubview(value view, value subview) {
+  CAMLparam2(view, subview);
+  [(UIView *)Field(view, 0) addSubview:(UIView *)Field(subview, 0)];
+  CAMLreturn0;
+}
+
+void UIViewController_setView(value uiviewcontroller, value uiview) {
+  CAMLparam2(uiviewcontroller, uiview);
+  ((UIViewController *)uiviewcontroller).view = (UIView *)Field(uiview, 0);
+  CAMLreturn0;
+}
+
+CAMLprim value UIView_backgroundColor(value uiview) {
+  CAMLparam1(uiview);
+  CAMLreturn((value)[(UIView *)Field(uiview, 0) backgroundColor]);
+}
+
+void UIView_setBackgroundColor(value uiview, value uicolor) {
+  CAMLparam2(uiview, uicolor);
+  ((UIView *)Field(uiview, 0)).backgroundColor = (UIColor *)uicolor;
+  CAMLreturn0;
+}
+
+void UIView_setClipsToBounds(value uiview, value b) {
+  CAMLparam2(uiview, b);
+  ((UIView *) Field(uiview, 0)).clipsToBounds = Int_val(b);
+  CAMLreturn0;
+}
+
+void UIView_sizeToFit(value uiview) {
+  [(UIView *)Field(uiview, 0) sizeToFit];
+}
+
+CAMLprim value UIView_sizeThatFits(value uiview, value size) {
+  CAMLparam2(uiview, size);
+  CAMLlocal1(ret);
+  CGSize retSize = [(UIView *)Field(uiview, 0) sizeThatFits:CGSizeMake(Double_field(size, 0), Double_field(size, 1))];
+  ret = caml_alloc_small(2, Double_array_tag);
+  Double_field(ret, 0) = retSize.width;
+  Double_field(ret, 1) = retSize.height;
+  CAMLreturn(ret);
+}
+
+// end UIView
+
+// end NSString
+
+void mainReason(UIViewController *viewController) {
+  CAMLparam0();
+  value *reason_main = caml_named_value("main");
+  caml_callback(*reason_main, (value)viewController);
+  CAMLreturn0;
+}
+
+CAMLprim value UILongPressGestureRecognizer_initWithTarget(value target, value cb) {
+  CAMLparam2(target, cb);
+  CAMLlocal1(ret);
+
+  MyUIView *view = (MyUIView *)Field(target, 0);
+  UILongPressGestureRecognizer *g =
+    [[UILongPressGestureRecognizer alloc] initWithTarget:view
+                                                  action:@selector(handleGesture:)];
+  if (!view.gesture1) {
+    view.gesture1 = g;
+    view.gesture1Callback = cb;
+  } else {
+    view.gesture2 = g;
+    view.gesture2Callback = cb;
+  }
+
+  ret = caml_alloc_small(1, Abstract_tag);
+  Field(ret, 0) = (long)g;
+
+  CAMLreturn(ret);
+}
+
+  |}];
+
   type uiview;
   type t = {
     objc: objcT(uiview),
@@ -142,6 +423,77 @@ and UIView: {
     "UIView_setBackgroundColor";
   external addSubview : (t, t) => unit = "UIView_addSubview";
   external setClipsToBounds : (t, bool) => unit = "UIView_setClipsToBounds";
+  external addGestureRecognizer : (t, UIGestureRecognizer.t) => unit =
+    "UIView_addGestureRecognizer";
+  [%c.raw
+    {|
+    void UIView_addGestureRecognizer(value view, value g) {
+      CAMLparam2(view, g);
+      [((UIView *)Field(view, 0)) addGestureRecognizer:(UIGestureRecognizer *)Field(g, 0)];
+      CAMLreturn0;
+    }
+  |}
+  ];
+}
+[@c.class]
+and UIGestureRecognizer: {
+  type gestureRecognizer;
+  type t;
+  type stateT =
+    | UIGestureRecognizerStatePossible
+    | UIGestureRecognizerStateBegan
+    | UIGestureRecognizerStateChanged
+    | UIGestureRecognizerStateEnded
+    | UIGestureRecognizerStateCancelled
+    | UIGestureRecognizerStateFailed
+    | UIGestureRecognizerStateRecognized;
+  let state: t => stateT;
+  let locationInView: t => UIView.t => _CGPoint;
+} = {
+  type gestureRecognizer;
+  type t = objcT(gestureRecognizer);
+  type stateT =
+    | UIGestureRecognizerStatePossible
+    | UIGestureRecognizerStateBegan
+    | UIGestureRecognizerStateChanged
+    | UIGestureRecognizerStateEnded
+    | UIGestureRecognizerStateCancelled
+    | UIGestureRecognizerStateFailed
+    | UIGestureRecognizerStateRecognized;
+  external state : t => stateT = "UIGestureRecognizer_state";
+  [%c.raw
+    {|
+    CAMLprim value UIGestureRecognizer_state(value g) {
+      CAMLparam1(g);
+      CAMLreturn(Val_int(((UIGestureRecognizer *) Field(g, 0)).state));
+    }
+  |}
+  ];
+
+  external locationInView : t => UIView.t => _CGPoint = "UIGestureRecognizer_locationInView";
+  [%c.raw {|
+    CAMLprim value UIGestureRecognizer_locationInView(value gesture, value uiview) {
+      CAMLparam2(gesture, uiview);
+      CAMLlocal1(ret);
+
+      CGPoint locationInView = [((UIGestureRecognizer *) Field(gesture, 0)) locationInView:((UIView *)Field(uiview, 0))];
+
+      ret = caml_alloc_small(2, Double_array_tag);
+      Double_field(ret, 0) = (double)locationInView.x;
+      Double_field(ret, 1) = (double)locationInView.y;
+
+      CAMLreturn(ret);
+    }
+  |}];
+}
+[@c.class]
+and UILongPressGestureRecognizer: {
+  type t = UIGestureRecognizer.t;
+  let initWithTarget: (UIView.t, t => unit) => t;
+} = {
+  include UIGestureRecognizer;
+  external initWithTarget : (UIView.t, t => unit) => t =
+    "UILongPressGestureRecognizer_initWithTarget";
 };
 
 [@c.class]
@@ -229,6 +581,48 @@ module UIImageView = {
   type t2 = objcT(uiimageview);
   [@c.new] external _new : unit => t = "";
   [@c.new] external newWithImage : UIImage.t => t = "";
+};
+
+[@c.class]
+module UIScrollView = {
+  include UIView;
+  type uiscrollview;
+  type t3 = objcT(uiscrollview);
+  [@c.new] external _new : unit => t = "";
+  external newWithFrame : _CGRect => t = "UIScrollView_newWithFrame";
+  [%c.raw
+    {|
+    CAMLprim value UIScrollView_newWithFrame(value frame) {
+      CAMLparam1(frame);
+      CAMLlocal1(ret);
+      value origin = Field(frame, 0);
+      value size = Field(frame, 1);
+      CGRect f = CGRectMake(Double_field(origin, 0), Double_field(origin, 1), Double_field(size, 0), Double_field(size, 1));
+
+      ret = caml_alloc_small(5, Abstract_tag);
+      Field(ret, 0) = (value)[[UIScrollView alloc] initWithFrame:f];
+      Field(ret, 1) = Val_none;
+      Field(ret, 2) = Val_none;
+      Field(ret, 3) = Val_none;
+      Field(ret, 4) = Val_none;
+      CAMLreturn(ret);
+    }
+  |}
+  ];
+  external setContentSize : (t, _CGSize) => unit =
+    "UIScrollView_setContentSize";
+  [%c.raw
+    {|
+    void UIScrollView_setContentSize(value scrollview, value contentSize) {
+      CAMLparam2(scrollview, contentSize);
+
+      CGSize size = CGSizeMake(Double_field(contentSize, 0), Double_field(contentSize, 1));
+      [((UIScrollView *)Field(scrollview, 0)) setContentSize:size];
+
+      CAMLreturn0;
+    }
+  |}
+  ];
 };
 
 [@c.class]

@@ -60,7 +60,7 @@ let appendToFile = (loc, str) => {
           CAMLreturn(some);
         }
 
-        static CAMLprim value isNil(value objc) {
+        CAMLprim value isNil(value objc) {
           CAMLparam1(objc);
           CAMLreturn(Int_val((id)(objc) == nil));
         }
