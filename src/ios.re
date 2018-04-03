@@ -2,12 +2,37 @@ open UIKit;
 
 let sp = Printf.sprintf;
 
+[@c.class "UIView"]
+module MyView = {
+  include UIView;
+  type myview;
+  type t2 = t(myview);
+  [@c.new] external _new : unit => t2 = "";
+  [@c.method]
+  let layoutSubviews = view => {
+    /* This doens't work, it'll exceed call stack. */
+    /*UIView.layoutSubviews(view);*/
+    print_endline("YO");
+  };
+  [@c.method]
+  let touchesBegan = (view, touches: NSSet.t(UITouch.t), withEvent: UIEvent.t) => {
+    let aTouch = NSSet.anyObject(touches);
+    let pos = UITouch.locationInView(aTouch, view);
+    print_endline(
+      "UITouch.locationInView x: "
+      ++ string_of_float(pos.x)
+      ++ " y: "
+      ++ string_of_float(pos.y)
+    );
+  };
+};
+
 let main = mainController => {
   let bla = UIView._new();
   let screenSize = UIScreen.(bounds(mainScreen()));
   UIView.setFrame(bla, screenSize);
   UIView.setBackgroundColor(bla, UIColor.whiteColor());
-  let v = UIView._new();
+  let v = MyView._new();
   UIView.addSubview(v, bla);
   let edgeInsets = _UIEdgeInsetsMake(45., 45., 45., 45.);
   let image =
@@ -21,7 +46,10 @@ let main = mainController => {
         x: 0.,
         y: 0.
       },
-      size: screenSize.size
+      size: {
+        width: screenSize.size.width -. 100.,
+        height: screenSize.size.height
+      }
     });
   for (y in 0 to 6) {
     let cardShadow = UIImageView.newWithImage(image);
@@ -59,21 +87,21 @@ let main = mainController => {
           32.
         )
       );
-    let g =
-      UILongPressGestureRecognizer.initWithTarget(handle, g =>
-        switch (UIGestureRecognizer.state(g)) {
-        | UIGestureRecognizerStateChanged =>
-          let pos = UIGestureRecognizer.locationInView(g, v);
-          print_endline(
-            "UIGestureRecognizerStateChanged x: "
-            ++ string_of_float(pos.x)
-            ++ " y: "
-            ++ string_of_float(pos.y)
-          );
-        | _ => ()
-        }
-      );
-    UIView.addGestureRecognizer(handle, g);
+    /*let g =
+        UILongPressGestureRecognizer.initWithTarget(handle, g =>
+          switch (UIGestureRecognizer.state(g)) {
+          | UIGestureRecognizerStateChanged =>
+            let pos = UIGestureRecognizer.locationInView(g, v);
+            print_endline(
+              "UIGestureRecognizerStateChanged x: "
+              ++ string_of_float(pos.x)
+              ++ " y: "
+              ++ string_of_float(pos.y)
+            );
+          | _ => ()
+          }
+        );
+      UIView.addGestureRecognizer(handle, g);*/
     UIView.setBackgroundColor(handle, UIColor.redColor());
     UIView.addSubview(scrollview, handle);
   };
